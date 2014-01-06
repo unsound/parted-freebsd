@@ -37,7 +37,11 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <assert.h>
-#include <endian.h>
+#if HAVE_ENDIAN_H
+# include <endian.h>
+#elif HAVE_SYS_ENDIAN_H
+# include <sys/endian.h>
+#endif
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>

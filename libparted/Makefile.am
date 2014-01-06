@@ -49,7 +49,8 @@ libparted_la_SOURCES  = debug.c			\
 EXTRA_libparted_la_SOURCES    = arch/linux.c	\
 				arch/linux.h	\
 				arch/gnu.c	\
-				arch/beos.c
+				arch/beos.c	\
+				arch/freebsd.c
 
 libparted_la_LIBADD =	\
   fs/libfs.la		\

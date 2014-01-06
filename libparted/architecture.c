@@ -34,6 +34,9 @@ ped_set_architecture ()
 #elif defined(__BEOS__)
 	extern PedArchitecture ped_beos_arch;
 	const PedArchitecture* arch = &ped_beos_arch;
+#elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+	extern PedArchitecture ped_freebsd_arch;
+	const PedArchitecture* arch = &ped_freebsd_arch;
 #else
 	extern PedArchitecture ped_gnu_arch;
 	const PedArchitecture* arch = &ped_gnu_arch;

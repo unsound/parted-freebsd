@@ -60,6 +60,7 @@ case "$host_os" in
 	linux*) OS=linux ;;
 	gnu*)	OS=gnu ;;
 	beos*)	OS=beos ;;
+	freebsd* | kfreebsd*-gnu)	OS=freebsd ;;
 	*)	AC_MSG_ERROR([Unknown or unsupported OS "$host_os".  Only "linux", "gnu" and "beos" are supported in this version of GNU Parted.]) ;;
 esac
 AC_SUBST([OS])
@@ -281,6 +282,7 @@ AC_CHECK_SIZEOF([off_t], [64], [
 	#include <sys/types.h>
 	#include <unistd.h>
 ])
+AC_CHECK_TYPE([loff_t], [long long])
 
 AM_ENABLE_SHARED
 if test "$OS" = linux && test $ac_cv_sizeof_off_t -lt 8; then
@@ -518,7 +520,7 @@ If you can't find one try:
         http://web.mit.edu/tytso/www/linux/e2fsprogs.html])]
 )
 
-AC_CHECK_HEADERS([getopt.h])
+AC_CHECK_HEADERS([getopt.h endian.h sys/endian.h])
 
 dnl required for libparted/llseek.c  (TODO: make linux-x86 only)
 if test "$OS" = linux; then
@@ -577,7 +579,9 @@ AC_C_CONST
 AC_C_RESTRICT
 
 dnl Checks for library functions.
-AC_CHECK_FUNCS([sigaction])
+if test "$OS" != freebsd; then
+	AC_CHECK_FUNCS([sigaction])
+fi
 AC_CHECK_FUNCS([getuid])
 
 dnl NOTE: We need to remove the gl_cv_ignore_unused_libraries flag if we

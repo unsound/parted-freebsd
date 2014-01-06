@@ -3766,6 +3766,7 @@ case "$host_os" in
 	linux*) OS=linux ;;
 	gnu*)	OS=gnu ;;
 	beos*)	OS=beos ;;
+	freebsd* | kfreebsd*-gnu)	OS=freebsd ;;
 	*)	as_fn_error $? "Unknown or unsupported OS \"$host_os\".  Only \"linux\", \"gnu\" and \"beos\" are supported in this version of GNU Parted." "$LINENO" 5 ;;
 esac
 
@@ -22042,6 +22043,17 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
+ac_fn_c_check_type "$LINENO" "loff_t" "ac_cv_type_loff_t" "$ac_includes_default"
+if test "x$ac_cv_type_loff_t" = x""yes; then :
+
+else
+
+cat >>confdefs.h <<_ACEOF
+#define loff_t long long
+_ACEOF
+
+fi
+
 
 # Check whether --enable-shared was given.
 if test "${enable_shared+set}" = set; then :
@@ -31169,12 +31181,14 @@ fi
 
 
 
-for ac_header in getopt.h
+for ac_header in getopt.h endian.h sys/endian.h
 do :
-  ac_fn_c_check_header_mongrel "$LINENO" "getopt.h" "ac_cv_header_getopt_h" "$ac_includes_default"
-if test "x$ac_cv_header_getopt_h" = x""yes; then :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+eval as_val=\$$as_ac_Header
+   if test "x$as_val" = x""yes; then :
   cat >>confdefs.h <<_ACEOF
-#define HAVE_GETOPT_H 1
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
 _ACEOF
 
 fi
@@ -32022,7 +32036,8 @@ _ACEOF
  esac
 
 
-for ac_func in sigaction
+if test "$OS" != freebsd; then
+	for ac_func in sigaction
 do :
   ac_fn_c_check_func "$LINENO" "sigaction" "ac_cv_func_sigaction"
 if test "x$ac_cv_func_sigaction" = x""yes; then :
@@ -32033,6 +32048,7 @@ _ACEOF
 fi
 done
 
+fi
 for ac_func in getuid
 do :
   ac_fn_c_check_func "$LINENO" "getuid" "ac_cv_func_getuid"
