@@ -28,7 +28,11 @@
 #  define _(String) (String)
 #endif /* ENABLE_NLS */
 
+#if defined(__FreeBSD__)
+#include <sys/uuid.h>
+#else
 #include <uuid/uuid.h>
+#endif /* defined(__FreeBSD__) */
 #include "platform_defs.h"
 #include "xfs_types.h"
 #include "xfs_sb.h"

@@ -36,7 +36,11 @@
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <unistd.h>
+#if defined(__FreeBSD__)
+#include <sys/uuid.h>
+#else
 #include <uuid/uuid.h>
+#endif /* defined(__FreeBSD__) */
 #include <stdbool.h>
 #include <errno.h>
 #include "xalloc.h"
@@ -381,7 +385,11 @@ pth_get_raw (const PedDevice *dev, const GuidPartitionTableHeader_t *pth)
  * Blame Intel.
  */
 static void
+#if defined(__FreeBSD__)
+swap_uuid_and_efi_guid (uuid_t *uuid)
+#else
 swap_uuid_and_efi_guid (uuid_t uuid)
+#endif /* defined(__FreeBSD__) */
 {
   efi_guid_t *guid = (efi_guid_t *) uuid;
 
@@ -519,8 +527,15 @@ gpt_alloc (const PedDevice *dev)
   ped_geometry_init (&gpt_disk_data->data_area, dev, data_start,
                      data_end - data_start + 1);
   gpt_disk_data->entry_count = GPT_DEFAULT_PARTITION_ENTRIES;
+#if defined(__FreeBSD__)
+  if (uuidgen ((struct uuid*) &gpt_disk_data->uuid, 1)) {
+    goto error_free_disk;
+  }
+  swap_uuid_and_efi_guid ((uuid_t*) &gpt_disk_data->uuid);
+#else
   uuid_generate ((unsigned char *) &gpt_disk_data->uuid);
   swap_uuid_and_efi_guid ((unsigned char *) (&gpt_disk_data->uuid));
+#endif /* defined(__FreeBSD__) */
   return disk;
 
 error_free_disk:
@@ -1301,8 +1316,15 @@ gpt_partition_new (const PedDisk *disk,
   gpt_part_data->msftres = 0;
   gpt_part_data->msftrecv = 0;
   gpt_part_data->atvrecv = 0;
+#if defined(__FreeBSD__)
+  if (uuidgen ((struct uuid*) &gpt_part_data->uuid, 1)) {
+    goto error_free_part;
+  }
+  swap_uuid_and_efi_guid ((uuid_t*) (&gpt_part_data->uuid));
+#else
   uuid_generate ((unsigned char *) &gpt_part_data->uuid);
   swap_uuid_and_efi_guid ((unsigned char *) (&gpt_part_data->uuid));
+#endif /* defined(__FreeBSD__) */
   memset (gpt_part_data->name, 0, sizeof gpt_part_data->name);
   return part;
 

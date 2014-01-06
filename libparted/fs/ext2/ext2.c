@@ -25,7 +25,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#if defined(__FreeBSD__)
+#include <uuid.h>
+#else
 #include <uuid/uuid.h>
+#endif /* defined(__FreeBSD__) */
 #include "ext2.h"
 
 /* ext2 stuff ****************************************************************/
@@ -668,6 +672,18 @@ int ext2_sync(struct ext2_fs *fs)
 	if (!fs->devhandle->ops->sync(fs->devhandle->cookie)) return 0;
 	return 1;
 }
+
+#if defined(__FreeBSD__)
+static int uuid_is_null(const char *uuid)
+{
+  uint32_t status = 0;
+  int32_t result;
+
+  result = uuid_is_nil((uuid_t*) uuid, &status);
+
+  return status == uuid_s_ok ? result != 0 : 0;
+}
+#endif /* defined(__FreeBSD__) */
 
 struct ext2_fs *ext2_open(struct ext2_dev_handle *handle, int state)
 {

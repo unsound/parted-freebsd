@@ -30555,7 +30555,9 @@ fi
 
 
 UUID_LIBS=""
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for uuid_generate in -luuid" >&5
+
+if test "$OS" != freebsd; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for uuid_generate in -luuid" >&5
 $as_echo_n "checking for uuid_generate in -luuid... " >&6; }
 if test "${ac_cv_lib_uuid_uuid_generate+set}" = set; then :
   $as_echo_n "(cached) " >&6
@@ -30594,17 +30596,18 @@ $as_echo "$ac_cv_lib_uuid_uuid_generate" >&6; }
 if test "x$ac_cv_lib_uuid_uuid_generate" = x""yes; then :
   UUID_LIBS="-luuid"
 else
-  as_fn_error $? "GNU Parted requires libuuid - a part of the e2fsprogs package (but
-sometimes distributed separately in uuid-devel or similar)
-This can probably be found on your distribution's CD or FTP site or at:
-         http://web.mit.edu/tytso/www/linux/e2fsprogs.html
-Note: if you are using precompiled packages you will also need the development
-package as well (which may be called e2fsprogs-devel or something similar).
-If you compile e2fsprogs yourself then you need to do 'make install' and
-'make install-libs'." "$LINENO" 5
+  as_fn_error $? "	GNU Parted requires libuuid - a part of the e2fsprogs package (but
+	sometimes distributed separately in uuid-devel or similar)
+	This can probably be found on your distribution's CD or FTP site or at:
+	         http://web.mit.edu/tytso/www/linux/e2fsprogs.html
+	Note: if you are using precompiled packages you will also need the development
+	package as well (which may be called e2fsprogs-devel or something similar).
+	If you compile e2fsprogs yourself then you need to do 'make install' and
+	'make install-libs'." "$LINENO" 5
 
 fi
 
+fi
 
 
 DM_LIBS=
@@ -31167,19 +31170,22 @@ fi
 
 
 
-ac_fn_c_check_header_mongrel "$LINENO" "uuid/uuid.h" "ac_cv_header_uuid_uuid_h" "$ac_includes_default"
+
+if test "$OS" != freebsd; then
+	ac_fn_c_check_header_mongrel "$LINENO" "uuid/uuid.h" "ac_cv_header_uuid_uuid_h" "$ac_includes_default"
 if test "x$ac_cv_header_uuid_uuid_h" = x""yes; then :
 
 else
   as_fn_error $? "GNU Parted requires libuuid - a part of the e2fsprogs package.
-You seem to have the library installed but not the headers.  These are usually
-found in a corresponding development package (usually called e2fsprogs-devel).
-If you can't find one try:
-        http://web.mit.edu/tytso/www/linux/e2fsprogs.html" "$LINENO" 5
+	You seem to have the library installed but not the headers.  These are usually
+	found in a corresponding development package (usually called e2fsprogs-devel).
+	If you can't find one try:
+	        http://web.mit.edu/tytso/www/linux/e2fsprogs.html" "$LINENO" 5
 
 fi
 
 
+fi
 
 for ac_header in getopt.h endian.h sys/endian.h
 do :

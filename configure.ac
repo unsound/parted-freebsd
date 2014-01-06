@@ -326,17 +326,22 @@ AC_SUBST([DL_LIBS])
 
 dnl Check for libuuid
 UUID_LIBS=""
-AC_CHECK_LIB([uuid], [uuid_generate], [UUID_LIBS="-luuid"],
-	[AC_MSG_ERROR(dnl
-[GNU Parted requires libuuid - a part of the e2fsprogs package (but
-sometimes distributed separately in uuid-devel or similar)
-This can probably be found on your distribution's CD or FTP site or at:
-         http://web.mit.edu/tytso/www/linux/e2fsprogs.html
-Note: if you are using precompiled packages you will also need the development
-package as well (which may be called e2fsprogs-devel or something similar).
-If you compile e2fsprogs yourself then you need to do 'make install' and
-'make install-libs'.])]
-)
+
+dnl FreeBSD's UUID functionality is in the standard C library, so this check is
+dnl not needed on FreeBSD.
+if test "$OS" != freebsd; then
+	AC_CHECK_LIB([uuid], [uuid_generate], [UUID_LIBS="-luuid"],
+		[AC_MSG_ERROR(dnl
+	[GNU Parted requires libuuid - a part of the e2fsprogs package (but
+	sometimes distributed separately in uuid-devel or similar)
+	This can probably be found on your distribution's CD or FTP site or at:
+	         http://web.mit.edu/tytso/www/linux/e2fsprogs.html
+	Note: if you are using precompiled packages you will also need the development
+	package as well (which may be called e2fsprogs-devel or something similar).
+	If you compile e2fsprogs yourself then you need to do 'make install' and
+	'make install-libs'.])]
+	)
+fi
 AC_SUBST([UUID_LIBS])
 
 dnl Check for libdevmapper
@@ -511,14 +516,19 @@ AC_SUBST([INTLINCS])
 
 
 dnl Checks for header files.
-AC_CHECK_HEADER([uuid/uuid.h], ,
-	[AC_MSG_ERROR(
-[GNU Parted requires libuuid - a part of the e2fsprogs package.
-You seem to have the library installed but not the headers.  These are usually
-found in a corresponding development package (usually called e2fsprogs-devel).
-If you can't find one try:
-        http://web.mit.edu/tytso/www/linux/e2fsprogs.html])]
-)
+
+dnl FreeBSD's UUID functionality is in the standard C library, so this check is
+dnl not needed on FreeBSD.
+if test "$OS" != freebsd; then
+	AC_CHECK_HEADER([uuid/uuid.h], ,
+		[AC_MSG_ERROR(
+	[GNU Parted requires libuuid - a part of the e2fsprogs package.
+	You seem to have the library installed but not the headers.  These are usually
+	found in a corresponding development package (usually called e2fsprogs-devel).
+	If you can't find one try:
+	        http://web.mit.edu/tytso/www/linux/e2fsprogs.html])]
+	)
+fi
 
 AC_CHECK_HEADERS([getopt.h endian.h sys/endian.h])
 

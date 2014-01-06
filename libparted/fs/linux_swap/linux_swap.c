@@ -32,7 +32,11 @@
 #endif /* ENABLE_NLS */
 
 #include <unistd.h>
+#if defined(__FreeBSD__)
+#include <sys/uuid.h>
+#else
 #include <uuid/uuid.h>
+#endif /* defined(__FreeBSD__) */
 
 #define SWAP_SPECIFIC(fs) ((SwapSpecific*) (fs->type_specific))
 #define BUFFER_SIZE 128
@@ -190,9 +194,15 @@ swap_init (PedFileSystem* fs, int fresh)
 		memset (fs_info->header, 0, getpagesize());
 
 		/* version is always 1 here */
+#if defined(__FreeBSD__)
+		uuidgen (&uuid_dat, 1);
+		memcpy (fs_info->header->new.sws_uuid, &uuid_dat,
+			sizeof (fs_info->header->new.sws_uuid));
+#else
 		uuid_generate (uuid_dat);
 		memcpy (fs_info->header->new.sws_uuid, uuid_dat,
 			sizeof (fs_info->header->new.sws_uuid));
+#endif /* defined(__FreeBSD__) */
                 return 1;
         }
 	else

@@ -34,7 +34,12 @@
 #	define REISER_FULL_SUPPORT
 #endif
 
+#if defined(__FreeBSD__)
+#include <inttypes.h>
+#include <sys/uuid.h>
+#else
 #include <uuid/uuid.h>
+#endif /* defined(__FreeBSD__) */
 #include <fcntl.h>
 #include <errno.h>
 

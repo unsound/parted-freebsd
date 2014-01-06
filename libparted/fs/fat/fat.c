@@ -18,7 +18,12 @@
 
 #include <config.h>
 #include <string.h>
+#if defined(__FreeBSD__)
+#include <inttypes.h>
+#include <sys/uuid.h>
+#else
 #include <uuid/uuid.h>
+#endif /* defined(__FreeBSD__) */
 
 #include "fat.h"
 #include "calc.h"
@@ -272,7 +277,11 @@ _gen_new_serial_number (void)
 		uint32_t i;
 	} uu32;
 
+#if defined(__FreeBSD__)
+	uuidgen (&uu32.uuid, 1);
+#else
 	uuid_generate (uu32.uuid);
+#endif /* defined(__FreeBSD__) */
 	return uu32.i;
 }
 

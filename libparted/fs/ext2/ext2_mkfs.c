@@ -28,7 +28,11 @@
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
+#if defined(__FreeBSD__)
+#include <sys/uuid.h>
+#else
 #include <uuid/uuid.h>
+#endif /* defined(__FreeBSD__) */
 #include "ext2.h"
 
 /* formula grabbed from linux ext2 kernel source
@@ -469,7 +473,13 @@ static int ext2_mkfs_init_sb (struct ext2_super_block *sb, blk_t numblocks,
 	sb->s_feature_incompat
 		|= PED_CPU_TO_LE32(EXT2_FEATURE_INCOMPAT_FILETYPE);
 
+#if defined(__FreeBSD__)
+	if(uuidgen((struct uuid*) sb->s_uuid, 1)) {
+	  return 0;
+	}
+#else
 	uuid_generate(sb->s_uuid);
+#endif /* defined(__FreeBSD__) */
 	memset(sb->s_volume_name, 0, 16);
 	memset(sb->s_last_mounted, 0, 64);
 	sb->s_algorithm_usage_bitmap = 0;
