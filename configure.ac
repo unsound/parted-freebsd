@@ -312,15 +312,20 @@ fi
 
 dnl Check for libdl, if we are doing dynamic loading
 DL_LIBS=""
-if test "$enable_dynamic_loading" = yes; then
-	AC_CHECK_LIB([dl], [dlopen],
-		DL_LIBS="-ldl"
-		PARTED_LIBS="$PARTED_LIBS -ldl"
-		AC_DEFINE([DYNAMIC_LOADING], [1], [Lazy linking to fs libs]),
-		AC_MSG_ERROR(
-			[-ldl not found!  Try using --disable-dynamic-loading]
+
+dnl FreeBSD's libdl functionality is in the standard C library, so this check is
+dnl not needed on FreeBSD.
+if test "$OS" != freebsd; then
+	if test "$enable_dynamic_loading" = yes; then
+		AC_CHECK_LIB([dl], [dlopen],
+			DL_LIBS="-ldl"
+			PARTED_LIBS="$PARTED_LIBS -ldl"
+			AC_DEFINE([DYNAMIC_LOADING], [1], [Lazy linking to fs libs]),
+			AC_MSG_ERROR(
+				[-ldl not found!  Try using --disable-dynamic-loading]
+			)
 		)
-	)
+	fi
 fi
 AC_SUBST([DL_LIBS])
 

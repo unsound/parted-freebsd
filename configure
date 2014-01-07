@@ -30502,8 +30502,10 @@ Or install gettext.  GNU gettext is available from
 fi
 
 DL_LIBS=""
-if test "$enable_dynamic_loading" = yes; then
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for dlopen in -ldl" >&5
+
+if test "$OS" != freebsd; then
+	if test "$enable_dynamic_loading" = yes; then
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for dlopen in -ldl" >&5
 $as_echo_n "checking for dlopen in -ldl... " >&6; }
 if test "${ac_cv_lib_dl_dlopen+set}" = set; then :
   $as_echo_n "(cached) " >&6
@@ -30541,16 +30543,17 @@ fi
 $as_echo "$ac_cv_lib_dl_dlopen" >&6; }
 if test "x$ac_cv_lib_dl_dlopen" = x""yes; then :
   DL_LIBS="-ldl"
-		PARTED_LIBS="$PARTED_LIBS -ldl"
+			PARTED_LIBS="$PARTED_LIBS -ldl"
 
 $as_echo "#define DYNAMIC_LOADING 1" >>confdefs.h
 
 else
   as_fn_error $? "-ldl not found!  Try using --disable-dynamic-loading
-		" "$LINENO" 5
+			" "$LINENO" 5
 
 fi
 
+	fi
 fi
 
 
