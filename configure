@@ -1957,7 +1957,7 @@ Optional Features:
   --enable-silent-rules          less verbose build output (undo: `make V=1')
   --disable-silent-rules         verbose build output (undo: `make V=0')
   --enable-mtrace         enable malloc() debugging
-  --enable-device-mapper  enable device mapper support default=yes
+  --enable-device-mapper  enable device mapper support default=FreeBSD: no, others: yes
   --enable-selinux        enable SELinux support default=no
   --enable-discover-only  support only reading/probing default=no
   --enable-dynamic-loading  support dynamic fs libraries default=yes
@@ -3796,7 +3796,11 @@ $as_echo "#define ENABLE_MTRACE 1" >>confdefs.h
 fi
 
 
-ENABLE_DEVICE_MAPPER=yes
+if test "$OS" != freebsd; then
+	ENABLE_DEVICE_MAPPER=yes
+else
+	ENABLE_DEVICE_MAPPER=no
+fi
 # Check whether --enable-device-mapper was given.
 if test "${enable_device_mapper+set}" = set; then :
   enableval=$enable_device_mapper; ENABLE_DEVICE_MAPPER=$enable_device_mapper

@@ -80,9 +80,13 @@ if test "$enable_mtrace" = yes; then
 fi
 
 AC_SUBST([ENABLE_DEVICE_MAPPER])
-ENABLE_DEVICE_MAPPER=yes
+if test "$OS" != freebsd; then
+	ENABLE_DEVICE_MAPPER=yes
+else
+	ENABLE_DEVICE_MAPPER=no
+fi
 AC_ARG_ENABLE([device-mapper],
-	[  --enable-device-mapper  enable device mapper support [default=yes]],
+	[  --enable-device-mapper  enable device mapper support [default=FreeBSD: no, others: yes]],
 	[ENABLE_DEVICE_MAPPER=$enable_device_mapper])
 if test $ENABLE_DEVICE_MAPPER = yes; then
 	AC_DEFINE([ENABLE_DEVICE_MAPPER],
