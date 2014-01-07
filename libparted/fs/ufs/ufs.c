@@ -48,6 +48,7 @@
 #define UFS_MAGIC_LFN	0x00095014
 #define UFS_MAGIC_FEA	0x00195612
 #define UFS_MAGIC_4GB	0x05231994
+#define UFS2_MAGIC	0x19540119
 
 struct ufs_csum {
 	uint32_t	cs_ndir;	/* number of directories */
@@ -132,13 +133,50 @@ struct ufs_super_block {
 	int8_t		fs_clean;	/* file system is clean flag */
 	int8_t		fs_ronly;	/* mounted read-only flag */
 	int8_t		fs_flags;	/* currently unused flag */
-	int8_t		fs_fsmnt[UFS_MAXMNTLEN];	/* name mounted on */
-/* these fields retain the current block allocation info */
-	uint32_t	fs_cgrotor;	/* last cg searched */
-	uint32_t	fs_csp[UFS_MAXCSBUFS];	/* list of fs_cs info buffers */
-	uint32_t	fs_maxcluster;
-	uint32_t	fs_cpc;		/* cyl per cycle in postbl */
-	uint16_t	fs_opostbl[16][8];	/* old rotation block list head */
+	union {
+		struct {
+			int8_t		fs_fsmnt[UFS_MAXMNTLEN];	/* name mounted on */
+			/* these fields retain the current block allocation info */
+			uint32_t	fs_cgrotor;	/* last cg searched */
+			uint32_t	fs_csp[UFS_MAXCSBUFS];	/* list of fs_cs info buffers */
+			uint32_t	fs_maxcluster;
+			uint32_t	fs_cpc;		/* cyl per cycle in postbl */
+			uint16_t	fs_opostbl[16][8];	/* old rotation block list head */
+		} fs_u1;
+		struct {
+			int8_t		fs_fsmnt[468];
+			uint8_t		fs_volname[32];
+			uint64_t	fs_swuid;
+			int32_t		fs_pad;
+			uint32_t	fs_cgrotor;
+			uint32_t	fs_ocsp[28];
+			uint32_t	fs_contigdirs;
+			uint32_t	fs_csp;
+			uint32_t	fs_maxcluster;
+			uint32_t	fs_active;
+			int32_t		fs_old_cpc;
+			int32_t		fs_maxbsize;
+			int64_t		fs_sparecon64[17];
+			int64_t		fs_sblockloc;
+			struct ufs2_csum_total {
+				uint64_t	cs_ndir;
+				uint64_t	cs_nbfree;
+				uint64_t	cs_nifree;
+				uint64_t	cs_nffree;
+				uint64_t	cs_numclusters;
+				uint64_t	cs_spare[3];
+			} fs_cstotal;
+			struct ufs_timeval {
+				int32_t	 tv_sec;
+				int32_t	 tv_usec;
+			} fs_time;
+			int64_t		fs_size;
+			int64_t		fs_dsize;
+			uint64_t	fs_csaddr;
+			int64_t		fs_pendingblocks;
+			int32_t		fs_pendinginodes;
+		} __attribute__((packed)) fs_u2;
+	} fs_u11;
 	union {
 		struct {
 			int32_t		fs_sparecon[53];/* reserved for future constants */
@@ -242,6 +280,45 @@ ufs_probe_hp (PedGeometry* geom)
 	return NULL;
 }
 
+static PedGeometry*
+ufs_probe_freebsd (PedGeometry* geom)
+{
+	int offsets[] = { 0, 16, 128, 512 };
+	int8_t buf[512 * 3];
+	struct ufs_super_block *sb;
+	PedSector block_size;
+	PedSector block_count;
+	int i;
+
+	if (geom->length < 5)
+		return 0;
+	
+	/* The UFS superblock could be on four different positions */
+	for (i = 0; i < 4; i++) {
+		if (!ped_geometry_read (geom, buf, offsets[i], 3))
+			return 0;
+
+		sb = (struct ufs_super_block *)buf;
+
+		/* Little endian is more likely on FreeBSD boxes */
+		if (PED_LE32_TO_CPU(sb->fs_magic) == UFS2_MAGIC) {
+			block_size = PED_LE32_TO_CPU(sb->fs_fsize) / 512;
+			block_count = PED_LE32_TO_CPU(sb->fs_u11.fs_u2.fs_size);
+			return ped_geometry_new (geom->dev, geom->start,
+						 block_size * block_count);
+		}
+
+		/* Then try big endian */
+		if (PED_BE32_TO_CPU(sb->fs_magic) == UFS2_MAGIC) {
+			block_size = PED_BE32_TO_CPU(sb->fs_fsize) / 512;
+			block_count = PED_BE32_TO_CPU(sb->fs_u11.fs_u2.fs_size);
+			return ped_geometry_new (geom->dev, geom->start,
+						 block_size * block_count);
+		}
+	}
+	return NULL;
+}
+
 #ifndef DISCOVER_ONLY
 static int
 ufs_clobber (PedGeometry* geom)
@@ -293,6 +370,24 @@ static PedFileSystemOps ufs_ops_hp = {
 	get_copy_constraint:	NULL
 };
 
+static PedFileSystemOps ufs_ops_freebsd = {
+	probe:		ufs_probe_freebsd,
+#ifndef DISCOVER_ONLY
+	clobber:	ufs_clobber,
+#else
+	clobber:	NULL,
+#endif
+	open:		NULL,
+	create:		NULL,
+	close:		NULL,
+	check:		NULL,
+	copy:		NULL,
+	resize:		NULL,
+	get_create_constraint:	NULL,
+	get_resize_constraint:	NULL,
+	get_copy_constraint:	NULL
+};
+
 static PedFileSystemType ufs_type_sun = {
 	next:	NULL,
 	ops:	&ufs_ops_sun,
@@ -307,6 +402,12 @@ static PedFileSystemType ufs_type_hp = {
 	block_sizes: HP_UFS_BLOCK_SIZES
 };
 
+static PedFileSystemType ufs_type_freebsd_ufs = {
+	next:   NULL,
+	ops:    &ufs_ops_freebsd,
+	name:   "freebsd-ufs"
+};
+
 void
 ped_file_system_ufs_init ()
 {
@@ -314,11 +415,13 @@ ped_file_system_ufs_init ()
 
 	ped_file_system_type_register (&ufs_type_sun);
 	ped_file_system_type_register (&ufs_type_hp);
+	ped_file_system_type_register (&ufs_type_freebsd_ufs);
 }
 
 void
 ped_file_system_ufs_done ()
 {
+	ped_file_system_type_unregister (&ufs_type_freebsd_ufs);
 	ped_file_system_type_unregister (&ufs_type_hp);
 	ped_file_system_type_unregister (&ufs_type_sun);
 }

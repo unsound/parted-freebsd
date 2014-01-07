@@ -937,6 +937,7 @@ TESTS = \
   t2300-dos-label-extended-bootcode.sh \
   t2310-dos-extended-2-sector-min-offset.sh \
   t2400-dos-hfs-partition-type.sh \
+  t2500-freebsd-ufs.sh \
   t3000-resize-fs.sh \
   t3200-type-change.sh \
   t3300-palo-prep.sh \
@@ -1372,6 +1373,8 @@ t2310-dos-extended-2-sector-min-offset.sh.log: t2310-dos-extended-2-sector-min-o
 	@p='t2310-dos-extended-2-sector-min-offset.sh'; $(am__check_pre) $(LOG_COMPILE) "$$tst" $(am__check_post)
 t2400-dos-hfs-partition-type.sh.log: t2400-dos-hfs-partition-type.sh
 	@p='t2400-dos-hfs-partition-type.sh'; $(am__check_pre) $(LOG_COMPILE) "$$tst" $(am__check_post)
+t2500-freebsd-ufs.sh.log: t2500-freebsd-ufs.sh
+	@p='t2500-freebsd-ufs.sh'; $(am__check_pre) $(LOG_COMPILE) "$$tst" $(am__check_post)
 t3000-resize-fs.sh.log: t3000-resize-fs.sh
 	@p='t3000-resize-fs.sh'; $(am__check_pre) $(LOG_COMPILE) "$$tst" $(am__check_post)
 t3200-type-change.sh.log: t3200-type-change.sh

@@ -87,6 +87,7 @@ static const char MBR_BOOT_CODE[] = {
 #define PARTITION_LINUX		0x83
 #define PARTITION_LINUX_EXT	0x85
 #define PARTITION_LINUX_LVM	0x8e
+#define PARTITION_FREEBSD_UFS	0xa5
 #define PARTITION_HFS		0xaf
 #define PARTITION_SUN_UFS	0xbf
 #define PARTITION_DELL_DIAG	0xde
@@ -1377,6 +1378,8 @@ msdos_partition_set_system (PedPartition* part,
 		dos_data->system = PARTITION_HFS;
 	else if (!strcmp (fs_type->name, "sun-ufs"))
 		dos_data->system = PARTITION_SUN_UFS;
+	else if (!strcmp (fs_type->name, "freebsd-ufs"))
+		dos_data->system = PARTITION_FREEBSD_UFS;
 	else if (is_linux_swap (fs_type->name))
 		dos_data->system = PARTITION_LINUX_SWAP;
 	else

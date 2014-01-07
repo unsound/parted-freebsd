@@ -143,6 +143,10 @@ typedef struct
     ((efi_guid_t) { PED_CPU_TO_LE32 (0x5265636F), PED_CPU_TO_LE16 (0x7665), \
                     PED_CPU_TO_LE16 (0x11AA), 0xaa, 0x11, \
                     { 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC }})
+#define PARTITION_FREEBSD_UFS_GUID \
+    ((efi_guid_t) { PED_CPU_TO_LE32 (0x516e7cb6), PED_CPU_TO_LE16 (0x6ecf), \
+                    PED_CPU_TO_LE16 (0x11d6), 0x8f, 0xf8, \
+                    { 0x00, 0x02, 0x2d, 0x09, 0x71, 0x2b }})
 
 struct __attribute__ ((packed)) _GuidPartitionTableHeader_t
 {
@@ -1445,6 +1449,11 @@ gpt_partition_set_system (PedPartition *part,
       if (strstr (fs_type->name, "swap"))
         {
           gpt_part_data->type = PARTITION_SWAP_GUID;
+          return 1;
+        }
+      if (strstr (fs_type->name, "freebsd-ufs"))
+        {
+          gpt_part_data->type = PARTITION_FREEBSD_UFS_GUID;
           return 1;
         }
     }
