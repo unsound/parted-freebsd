@@ -1057,6 +1057,8 @@ _probe_kern_disks ()
 {
 	size_t listsize;
 	char *disklist, *pdisklist, *psave;
+	char buf[PATH_MAX];
+	struct stat st;
 
 	if (sysctlbyname("kern.disks", NULL, &listsize, NULL, 0) != 0) {
 		ped_exception_throw (
@@ -1090,6 +1092,10 @@ _probe_kern_disks ()
 		strncat (dev_name, token, sizeof(dev_name) - strlen(_PATH_DEV) - 1);
 		dev_name[sizeof(dev_name) - 1] = '\0';
 		_ped_device_probe (dev_name);
+
+		snprintf (buf, sizeof (buf), "%s.eli", dev_name);
+		if (stat (buf, &st) == 0)
+			_ped_device_probe (buf);
 	}
 
 	free(disklist);
